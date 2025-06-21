@@ -136,10 +136,7 @@ class AIService:
                 if proxy_url:
                     # Create httpx client with proxy
                     http_client = httpx.Client(
-                        proxies={
-                            "http://": proxy_url,
-                            "https://": proxy_url
-                        }
+                        proxy=proxy_url
                     )
                     client_kwargs['http_client'] = http_client
                 
