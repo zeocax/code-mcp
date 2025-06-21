@@ -29,6 +29,17 @@ def print_config():
             print(f"OpenAI Base URL: {ai_config.openai_base_url}")
     elif ai_config.provider == 'anthropic':
         print(f"Anthropic API Key: {'Set' if ai_config.anthropic_api_key else 'Not set'}")
+    
+    # Print proxy settings
+    print("\n=== Proxy Configuration ===")
+    if ai_config.openai_proxy:
+        print(f"OpenAI Proxy: {ai_config.openai_proxy}")
+    elif ai_config.https_proxy:
+        print(f"HTTPS Proxy: {ai_config.https_proxy}")
+    elif ai_config.http_proxy:
+        print(f"HTTP Proxy: {ai_config.http_proxy}")
+    else:
+        print("No proxy configured")
     print()
 
 
@@ -50,7 +61,7 @@ def add(x, y):
     
     try:
         print("Sending test prompt to LLM...")
-        result = await ai_service.update_with_architecture(old_code, new_code)
+        result = await ai_service.audit_architecture_consistency(old_code, new_code)
         
         print("\n--- LLM Response ---")
         print(result)
@@ -68,6 +79,30 @@ def add(x, y):
         
     except Exception as e:
         print(f"❌ LLM test failed: {str(e)}")
+        return False
+
+
+async def test_proxy_connection():
+    """Test LLM connectivity through proxy if configured"""
+    print("\n=== Testing Proxy Connection ===")
+    
+    proxy_configured = ai_config.openai_proxy or ai_config.https_proxy or ai_config.http_proxy
+    if not proxy_configured:
+        print("ℹ️  No proxy configured, skipping proxy test")
+        return True
+    
+    print(f"Testing connection through proxy...")
+    
+    # Simple test to verify proxy works
+    old_code = "def hello(): return 'world'"
+    new_code = "def hello(): pass"
+    
+    try:
+        result = await ai_service.audit_architecture_consistency(old_code, new_code)
+        print("✅ Proxy connection successful!")
+        return True
+    except Exception as e:
+        print(f"❌ Proxy connection failed: {str(e)}")
         return False
 
 
@@ -105,7 +140,7 @@ class Calculator:
     
     try:
         print("Testing code improvement capability...")
-        result = await ai_service.update_with_architecture(old_code, new_code)
+        result = await ai_service.audit_architecture_consistency(old_code, new_code)
         
         print("\n--- Improved Code ---")
         print(result[:500] + "..." if len(result) > 500 else result)
@@ -145,7 +180,11 @@ async def main():
     # Test 1: Simple prompt
     test_results.append(await test_simple_prompt())
     
-    # Test 2: Code improvement
+    # Test 2: Proxy connection (if configured)
+    if test_results[0]:  # Only run if first test passed
+        test_results.append(await test_proxy_connection())
+    
+    # Test 3: Code improvement
     if test_results[0]:  # Only run if first test passed
         test_results.append(await test_code_improvement())
     
