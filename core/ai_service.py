@@ -120,6 +120,8 @@ class AIService:
         if provider == 'openai':
             try:
                 import openai
+                import httpx
+                
                 api_key = self.config.get_api_key('openai')
                 if not api_key:
                     raise ValueError("OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
@@ -129,9 +131,24 @@ class AIService:
                 if self.config.openai_base_url:
                     client_kwargs['base_url'] = self.config.openai_base_url
                 
+                # Configure proxy if available
+                proxy_url = self.config.openai_proxy or self.config.https_proxy or self.config.http_proxy
+                if proxy_url:
+                    # Create httpx client with proxy
+                    http_client = httpx.Client(
+                        proxies={
+                            "http://": proxy_url,
+                            "https://": proxy_url
+                        }
+                    )
+                    client_kwargs['http_client'] = http_client
+                
                 self._client = openai.OpenAI(**client_kwargs)
-            except ImportError:
-                raise ImportError("OpenAI library not installed. Run: pip install openai")
+            except ImportError as e:
+                if 'httpx' in str(e):
+                    raise ImportError("httpx library not installed. Run: pip install httpx")
+                else:
+                    raise ImportError("OpenAI library not installed. Run: pip install openai")
         
         elif provider == 'anthropic':
             try:

@@ -19,6 +19,11 @@ class AIConfig:
         self.openai_base_url = os.environ.get('OPENAI_BASE_URL', '')  # Optional custom endpoint
         self.anthropic_api_key = os.environ.get('ANTHROPIC_API_KEY', '')
         
+        # Proxy settings
+        self.http_proxy = os.environ.get('HTTP_PROXY', '') or os.environ.get('http_proxy', '')
+        self.https_proxy = os.environ.get('HTTPS_PROXY', '') or os.environ.get('https_proxy', '')
+        self.openai_proxy = os.environ.get('OPENAI_PROXY', '')  # OpenAI-specific proxy
+        
         # Model settings
         self.model = os.environ.get('AI_MODEL', 'gpt-4')
         
