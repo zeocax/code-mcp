@@ -187,11 +187,14 @@ class AIService:
                 # Only add max_tokens if it's set
                 if self.config.max_tokens is not None:
                     params['max_tokens'] = self.config.max_tokens
+                try:
+                    response = client.chat.completions.create(**params)
+                    content = response.choices[0].message.content.strip()
+                    return self._extract_code_from_response(content)
+                except Exception as e:
+                    print(f"[DEBUG] OpenAI API error: {str(e)}")
+                    raise e
                 
-                response = client.chat.completions.create(**params)
-                content = response.choices[0].message.content.strip()
-                return self._extract_code_from_response(content)
-            
             elif provider == 'anthropic':
                 # Build request parameters
                 params = {
