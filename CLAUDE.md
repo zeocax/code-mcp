@@ -3,6 +3,13 @@
 ## 项目概述
 基于MCP（Model Context Protocol）的代码分析服务器，提供代码阅读、搜索、分析等功能。采用模块化设计，易于扩展。
 
+## 更新日志
+
+### 2024-12-23 - Prompts功能规划
+- 计划添加MCP Prompts支持，让服务器能够提供预定义的prompt模板
+- 设计统一的MCPRegistry架构，同时管理tools和prompts
+- 目标：保持向后兼容的同时，添加prompt模板功能
+
 ## 架构设计
 
 ### 核心原则
@@ -165,6 +172,54 @@ await client.call_tool("analyze_structure", {"path": "src/main.py"})
 - 验证输入参数
 - 防止路径遍历攻击
 - 限制资源使用
+
+## 待实现功能：MCP Prompts支持
+
+### 背景
+MCP协议支持prompts功能，允许服务器提供预定义的prompt模板供客户端使用。这能让用户快速访问常用的代码分析prompt。
+
+### 实施计划
+
+#### 1. 统一的MCPRegistry架构
+创建新的注册系统，同时管理tools和prompts：
+```python
+class MCPRegistry:
+    def __init__(self):
+        self._tools = {}
+        self._tool_handlers = {}
+        self._prompts = {}
+```
+
+#### 2. Prompt模板设计
+计划添加的prompt模板：
+- **code_review**: 代码审查prompt
+- **explain_code**: 代码解释prompt
+- **find_bugs**: 查找潜在问题prompt
+- **architecture_review**: 架构评审prompt
+- **refactor_suggestions**: 重构建议prompt
+
+#### 3. 服务器更新
+需要在server.py中添加：
+```python
+@server.list_prompts()
+async def handle_list_prompts():
+    return registry.get_prompts()
+
+@server.get_prompt()
+async def handle_get_prompt(name: str, arguments: dict):
+    return registry.get_prompt(name)
+```
+
+#### 4. 向后兼容策略
+- 保持现有ToolRegistry接口不变
+- 逐步迁移到新的MCPRegistry
+- 确保所有现有功能继续正常工作
+
+### 技术决策
+- 选择统一的MCPRegistry而非分离的registries，以提供更好的扩展性
+- 使用包装器模式确保向后兼容
+- Prompt模板采用参数化设计，支持动态内容
+
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.

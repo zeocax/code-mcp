@@ -2,6 +2,7 @@
 """MCP server for code analysis with modular architecture"""
 
 import asyncio
+import os
 import sys
 from pathlib import Path
 
@@ -19,19 +20,20 @@ from tools.file_tools import register_file_tools
 from tools.code_tools import register_code_tools
 from tools.ai_tools import register_ai_tools
 
+# Import prompt registry and prompts
+from prompts.registry import prompt_registry
+from prompts.code_prompts import ALL_PROMPTS
+
 
 # Initialize server
 server = Server("code-analyzer")
 
 # Register all tools
-#print("[DEBUG] Registering tools...")
-# register_file_tools()
-#print(f"[DEBUG] File tools registered: {len([t for t in registry.get_tools() if 'file' in t.name])}")
-# register_code_tools()
-# print(f"[DEBUG] Code tools registered: {len([t for t in registry.get_tools() if 'code' in t.name or 'find' in t.name or 'analyze' in t.name])}")
 register_ai_tools()
-print(f"[DEBUG] AI tools registered: {len([t for t in registry.get_tools() if 'architecture' in t.name])}")
-print(f"[DEBUG] Total tools registered: {len(registry.get_tools())}")
+
+# Register all prompts
+for prompt in ALL_PROMPTS:
+    prompt_registry.register(prompt)
 
 
 @server.list_tools()
@@ -65,6 +67,89 @@ async def handle_call_tool(
         return [types.TextContent(type="text", text=f"Error executing tool {name}: {str(e)}")]
 
 
+@server.list_prompts()
+async def handle_list_prompts() -> list[types.Prompt]:
+    """List all registered prompts"""
+    prompts = prompt_registry.get_prompts()
+    print(f"[DEBUG] Returning {len(prompts)} prompts to MCP client")
+    for prompt in prompts:
+        print(f"[DEBUG] - {prompt.name}")
+        current_path = os.path.dirname(os.path.abspath(__file__))
+        print(f"[DEBUG] Total prompts registered: {len(prompts)}", file=open(os.path.join(current_path, "prompts.log"), "a"))
+    return prompts
+
+
+@server.get_prompt()
+async def handle_get_prompt(name: str, arguments: dict | None) -> types.GetPromptResult:
+    """Get a specific prompt by name"""
+    prompt = prompt_registry.get_prompt(name)
+    if not prompt:
+        raise ValueError(f"Unknown prompt: {name}")
+    
+    # Build the prompt messages based on the template
+    messages = []
+    
+    if prompt.name == "audit_architecture_consistency":
+        # Get required arguments
+        if not arguments:
+            raise ValueError("Arguments required for audit_architecture_consistency prompt")
+        
+        old_file = arguments.get("old_file")
+        new_file = arguments.get("new_file")
+        current_path = os.path.dirname(os.path.abspath(__file__))
+        print(f"[DEBUG] old_file: {old_file}, new_file: {new_file}", file=open(os.path.join(current_path, "prompts.log"), "a"))
+
+        if not old_file or not new_file:
+            raise ValueError("Both old_file and new_file arguments are required")
+        
+        try:
+            # Read both files
+            from core.file_system import FileSystem
+            fs = FileSystem()
+            old_code = await fs.read_file(old_file)
+            new_code = await fs.read_file(new_file)
+            
+            # Import the prompt template
+            from core.ai_service import AUDIT_ARCHITECTURE_CONSISTENCY_PROMPT
+            
+            # Format the prompt with both code files
+            prompt_text = AUDIT_ARCHITECTURE_CONSISTENCY_PROMPT.format(
+                old_code=old_code,
+                new_code=new_code
+            )
+            
+            messages.append(types.PromptMessage(
+                role="user",
+                content=types.TextContent(
+                    type="text",
+                    text=prompt_text
+                )
+            ))
+        except Exception as e:
+            messages.append(types.PromptMessage(
+                role="user",
+                content=types.TextContent(
+                    type="text",
+                    text=f"Error reading files: {str(e)}"
+                )
+            ))
+    else:
+        # For any other prompts (though we only have one now)
+        messages.append(types.PromptMessage(
+            role="user",
+            content=types.TextContent(
+                type="text",
+                text=f"请提供{prompt.description}"
+            )
+        ))
+    
+    print(f"[DEBUG] messages: {messages}", file=open(os.path.join(current_path, "prompts.log"), "a"))
+    return types.GetPromptResult(
+        description=prompt.description,
+        messages=messages
+    )
+
+
 async def main():
     """Run the server"""
     async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
@@ -73,9 +158,10 @@ async def main():
             write_stream,
             InitializationOptions(
                 server_name="code-analyzer",
-                server_version="0.2.0",
+                server_version="0.3.0",
                 capabilities={
-                    "tools": {}  # Explicitly declare tool support
+                    "tools": {},  # Tool support
+                    # "prompts": {}  # Prompt support
                 }
             ),
         )
