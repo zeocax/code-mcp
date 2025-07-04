@@ -43,16 +43,17 @@ async def handle_audit_architecture_consistency(arguments: Dict[str, Any]) -> Li
             f.write(audited_code)
         
         # Prepare result message
-        result_lines = [
-            f"Successfully completed architecture consistency audit for {new_file}",
-        ]
+        # result_lines = [
+        #     f"Successfully completed architecture consistency audit for {new_file}",
+        # ]
         
-        if backup:
-            result_lines.append(f"Backup saved: {backup_path}")
+        # if backup:
+        #     result_lines.append(f"Backup saved: {backup_path}")
         
-        result_lines.append("\n新架构文件已完成严格审计，所有不一致之处已通过注释和异常进行标记。")
-        
-        return [types.TextContent(type="text", text="\n".join(result_lines))]
+        # result_lines.append("\n新架构文件已完成严格审计，所有不一致之处已通过注释和异常进行标记。")
+        critical_errors = audited_code.count("CRITICAL_ERROR")
+        risk_infos = audited_code.count("RISK_INFO")
+        return [types.TextContent(type="text", text=f"审计完成，共发现{critical_errors}处严重错误，{risk_infos}处风险信息")]
         
     except FileNotFoundError as e:
         return [types.TextContent(type="text", text=f"Error: File not found - {str(e)}")]
