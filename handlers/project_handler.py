@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any
 import mcp.types as types
 from core.project_manager import ProjectManager
 

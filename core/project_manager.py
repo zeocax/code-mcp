@@ -366,10 +366,16 @@ class ProjectManager:
             rel_path = str(abs_path)
         
         if audited:
-            # Mark as audited with timestamp
+            # Calculate file hash
+            file_hash = self._calculate_file_hash(str(abs_path))
+            if not file_hash:
+                return False  # File doesn't exist
+                
+            # Mark as audited with timestamp and hash
             meta["file_status"][rel_path] = {
                 "audited": True,
-                "audited_at": datetime.now().isoformat()
+                "audited_at": datetime.now().isoformat(),
+                "file_hash": file_hash
             }
         else:
             # Remove audit status
@@ -380,7 +386,7 @@ class ProjectManager:
         return True
     
     def get_file_status(self, file_path: str) -> Optional[Dict[str, Any]]:
-        """Get file audit status"""
+        """Get file audit status with hash verification"""
         meta = self._load_meta()
         
         # Convert to relative path for lookup
@@ -390,7 +396,26 @@ class ProjectManager:
         except ValueError:
             rel_path = str(abs_path)
         
-        return meta["file_status"].get(rel_path)
+        status = meta["file_status"].get(rel_path)
+        if not status:
+            return None
+            
+        # Check if file still exists and hash matches
+        current_hash = self._calculate_file_hash(str(abs_path))
+        if not current_hash:
+            return None  # File doesn't exist
+            
+        # Create a copy of status to avoid modifying the original
+        result = status.copy()
+        
+        # Check if file has been modified since audit
+        stored_hash = status.get("file_hash")
+        if stored_hash and current_hash != stored_hash:
+            result["audited"] = False
+            result["modified_after_audit"] = True
+            result["current_hash"] = current_hash
+            
+        return result
     
     def list_file_status(self, directory: Optional[str] = None) -> str:
         """List files and their audit status as markdown table
@@ -429,14 +454,33 @@ class ProjectManager:
         # Sort files
         all_files.sort()
         
-        # Build markdown table
-        table = "| File | Audited |\n"
-        table += "|------|---------|\n"
+        # Build markdown table with status column
+        table = "| File | Status |\n"
+        table += "|------|--------|\n"
         
         for file_path in all_files:
-            status = file_statuses.get(file_path)
-            audited = "✓" if status and status.get("audited") else "✗"
-            table += f"| {file_path} | {audited} |\n"
+            status_info = file_statuses.get(file_path)
+            
+            if status_info:
+                # Check if file still exists and hash matches
+                abs_path = self.project_root / file_path
+                current_hash = self._calculate_file_hash(str(abs_path))
+                
+                if not current_hash:
+                    status = "❌ Not Found"
+                else:
+                    stored_hash = status_info.get("file_hash")
+                    if not stored_hash:
+                        # Old format without hash
+                        status = "⚠️ Audited (no hash)"
+                    elif current_hash != stored_hash:
+                        status = "🔄 Modified"
+                    else:
+                        status = "✓ Audited"
+            else:
+                status = "✗ Not Audited"
+                
+            table += f"| {file_path} | {status} |\n"
         
         return table
     

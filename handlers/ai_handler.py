@@ -7,9 +7,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from typing import List, Dict, Any
 import mcp.types as types
 from core.ai_service import ai_service
-from core.project_manager import ProjectManager, FileStatus
-import shutil
-from datetime import datetime
+from core.project_manager import ProjectManager
 
 pm = ProjectManager()
 
@@ -17,7 +15,6 @@ async def handle_audit_architecture_consistency(arguments: Dict[str, Any]) -> Li
     """Handle audit_architecture_consistency tool call"""
     old_file = arguments.get("old_file")
     new_file = arguments.get("new_file")
-    exemption_list_name = arguments.get("exemption_list")
     
     if not old_file or not new_file:
         return [types.TextContent(type="text", text="Error: old_file and new_file are required")]
@@ -29,51 +26,36 @@ async def handle_audit_architecture_consistency(arguments: Dict[str, Any]) -> Li
         with open(new_file, 'r', encoding='utf-8') as f:
             new_code = f.read()
         
-        # Read user exemptions from list variable if provided
-        user_exemptions = ""
-        if exemption_list_name:
-            exemption_data = pm.read_list_variable(exemption_list_name)
-            if exemption_data:
-                # Join list items into a single string
-                user_exemptions = "\n".join(exemption_data["items"])
-                
-                # Check if user confirmation is needed
-                if exemption_data.get("need_user_confirmation", False):
-                    return [types.TextContent(type="text", text=f"Error: Exemption list '{exemption_list_name}' does not need user confirmation, please create a new exemption list with need_user_confirmation set to True")]
-                    # Note: In a real implementation, this would trigger a confirmation dialog
-                    # print(f"[INFO] Using exemption list '{exemption_list_name}' which requires user confirmation")
-            else:
-                return [types.TextContent(type="text", text=f"Error: Exemption list not found: {exemption_list_name}")]
-        
-        # Analyze differences
-        # analysis = await ai_service.analyze_architecture_diff(old_code, new_code)
-        
         # Use AI to audit consistency
-        audited_code = await ai_service.audit_architecture_consistency(old_code, new_code, user_exemptions)
+        audited_code = await ai_service.audit_architecture_consistency(old_code, new_code)
         
         # Write the audited code back to new_file
         with open(new_file, 'w', encoding='utf-8') as f:
             f.write(audited_code)
         
-        # Update file status to reviewed after successful audit
+        # Update file status to audited after successful audit
+        status_updated = False
+        status_error = None
         try:
-            pm.update_file_status(new_file, FileStatus.REVIEWED)
+            status_updated = pm.update_file_status(new_file, audited=True)
         except Exception as e:
-            # Log error but don't fail the audit
-            print(f"Warning: Failed to update file status: {str(e)}")
+            status_error = str(e)
+            print(f"Warning: Failed to update file status: {status_error}")
         
         # Prepare result message
-        # result_lines = [
-        #     f"Successfully completed architecture consistency audit for {new_file}",
-        # ]
-        
-        # if backup:
-        #     result_lines.append(f"Backup saved: {backup_path}")
-        
-        # result_lines.append("\n新架构文件已完成严格审计，所有不一致之处已通过注释和异常进行标记。")
         critical_errors = audited_code.count("CRITICAL_ERROR")
         risk_infos = audited_code.count("RISK_INFO")
-        return [types.TextContent(type="text", text=f"审计完成，共发现{critical_errors}处严重错误，{risk_infos}处风险信息")]
+        
+        result_msg = f"审计完成，共发现{critical_errors}处严重错误，{risk_infos}处风险信息"
+        
+        if status_updated:
+            result_msg += "\n✓ 文件审计状态已更新"
+        elif status_error:
+            result_msg += f"\n⚠️ 文件状态更新失败: {status_error}"
+        else:
+            result_msg += "\n⚠️ 文件状态更新失败"
+            
+        return [types.TextContent(type="text", text=result_msg)]
         
     except FileNotFoundError as e:
         return [types.TextContent(type="text", text=f"Error: File not found - {str(e)}")]
