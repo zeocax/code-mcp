@@ -486,7 +486,8 @@ async def handle_append_to_list_variable(arguments: Dict[str, Any], server=None)
                     return [types.TextContent(type="text", text=f"❌ 操作已取消\n\n用户拒绝向列表变量 '{name}' 添加项。")]
                     
             except Exception as e:
-                return [types.TextContent(type="text", text=f"Error getting user confirmation: {str(e)}")]
+                import traceback
+                return [types.TextContent(type="text", text=f"Error getting user confirmation: {str(traceback.print_exc())}")]
         
         # Proceed with adding the item
         success = pm.append_to_list_variable(name, item)
