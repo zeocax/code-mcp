@@ -429,37 +429,37 @@ def register_project_tools():
         handle_delete_list_variable, handle_append_to_list_variable, handle_remove_from_list_variable
     )
     
-    # Register plan tools
-    registry.register(create_plan_tool, handle_create_plan)
-    registry.register(read_plan_tool, handle_read_plan)
-    registry.register(update_plan_tool, handle_update_plan)
-    registry.register(delete_plan_tool, handle_delete_plan)
+    # # Register plan tools
+    # registry.register(create_plan_tool, handle_create_plan)
+    # registry.register(read_plan_tool, handle_read_plan)
+    # registry.register(update_plan_tool, handle_update_plan)
+    # registry.register(delete_plan_tool, handle_delete_plan)
     
-    # Register doc tools
-    registry.register(create_doc_tool, handle_create_doc)
-    registry.register(read_doc_tool, handle_read_doc)
-    registry.register(update_doc_tool, handle_update_doc)
+    # # Register doc tools
+    # registry.register(create_doc_tool, handle_create_doc)
+    # registry.register(read_doc_tool, handle_read_doc)
+    # registry.register(update_doc_tool, handle_update_doc)
     
-    # Register todo tools
-    registry.register(create_todo_tool, handle_create_todo)
-    registry.register(read_todos_tool, handle_read_todos)
-    registry.register(finish_todo_tool, handle_finish_todo)
-    registry.register(delete_todo_tool, handle_delete_todo)
-    registry.register(move_todo_tool, handle_move_todo)
+    # # Register todo tools
+    # registry.register(create_todo_tool, handle_create_todo)
+    # registry.register(read_todos_tool, handle_read_todos)
+    # registry.register(finish_todo_tool, handle_finish_todo)
+    # registry.register(delete_todo_tool, handle_delete_todo)
+    # registry.register(move_todo_tool, handle_move_todo)
     
-    # Register recent changes tools
-    registry.register(update_recent_changes_tool, handle_update_recent_changes)
-    registry.register(get_recent_changes_tool, handle_get_recent_changes)
+    # # Register recent changes tools
+    # registry.register(update_recent_changes_tool, handle_update_recent_changes)
+    # registry.register(get_recent_changes_tool, handle_get_recent_changes)
     
     # Register file status tools
-    registry.register(update_file_status_tool, handle_update_file_status)
-    registry.register(get_file_status_tool, handle_get_file_status)
+    # registry.register(update_file_status_tool, handle_update_file_status)
+    # registry.register(get_file_status_tool, handle_get_file_status)
     registry.register(list_file_status_tool, handle_list_file_status)
     
     # Register list variable tools
     registry.register(create_list_variable_tool, handle_create_list_variable)
     registry.register(read_list_variable_tool, handle_read_list_variable)
-    registry.register(update_list_variable_tool, handle_update_list_variable)
-    registry.register(delete_list_variable_tool, handle_delete_list_variable)
+    # registry.register(update_list_variable_tool, handle_update_list_variable)
+    # registry.register(delete_list_variable_tool, handle_delete_list_variable)
     registry.register(append_to_list_variable_tool, handle_append_to_list_variable)
-    registry.register(remove_from_list_variable_tool, handle_remove_from_list_variable)
+    # registry.register(remove_from_list_variable_tool, handle_remove_from_list_variable)
