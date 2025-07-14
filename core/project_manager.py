@@ -410,9 +410,9 @@ class ProjectManager:
             if not search_path.exists():
                 return f"Directory not found: {directory}"
             
-            # Find all files in directory
+            # Find all Python files in directory
             all_files = []
-            for file_path in search_path.rglob("*"):
+            for file_path in search_path.rglob("*.py"):
                 if file_path.is_file():
                     try:
                         rel_path = file_path.relative_to(self.project_root).as_posix()
@@ -420,11 +420,11 @@ class ProjectManager:
                     except ValueError:
                         pass
         else:
-            # List all tracked files
-            all_files = list(file_statuses.keys())
+            # List all tracked Python files
+            all_files = [f for f in file_statuses.keys() if f.endswith('.py')]
         
         if not all_files:
-            return "No files found"
+            return "No Python files found"
         
         # Sort files
         all_files.sort()
