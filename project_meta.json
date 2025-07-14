@@ -36,7 +36,13 @@
     "current": [],
     "archived": []
   },
-  "file_status": {},
+  "file_status": {
+    "server.py": {
+      "audited": true,
+      "audited_at": "2025-07-15T01:22:48.098293",
+      "file_hash": "2efbd311610e68f3ee711517a93d01c89fb6a05a60a4c486d780952014ecf903"
+    }
+  },
   "list_variables": {
     "audit_exemptions_basic": {
       "items": [

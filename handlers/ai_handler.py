@@ -9,7 +9,9 @@ import mcp.types as types
 from core.ai_service import ai_service
 from core.project_manager import ProjectManager
 
+# Initialize with explicit project root
 pm = ProjectManager()
+print(f"[DEBUG] AI Handler - ProjectManager initialized with root: {pm.project_root}")
 
 async def handle_audit_architecture_consistency(arguments: Dict[str, Any]) -> List[types.TextContent]:
     """Handle audit_architecture_consistency tool call"""
@@ -37,10 +39,14 @@ async def handle_audit_architecture_consistency(arguments: Dict[str, Any]) -> Li
         status_updated = False
         status_error = None
         try:
+            print(f"[DEBUG] Attempting to update file status for: {new_file}")
             status_updated = pm.update_file_status(new_file, audited=True)
+            print(f"[DEBUG] update_file_status returned: {status_updated}")
         except Exception as e:
             status_error = str(e)
-            print(f"Warning: Failed to update file status: {status_error}")
+            print(f"[ERROR] Exception in update_file_status: {status_error}")
+            import traceback
+            traceback.print_exc()
         
         # Prepare result message
         critical_errors = audited_code.count("CRITICAL_ERROR")

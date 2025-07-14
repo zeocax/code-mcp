@@ -72,8 +72,27 @@ class ProjectManager:
     
     def _save_meta(self, meta: Dict[str, Any]):
         """Save project metadata to file"""
-        with open(self.meta_file, 'w', encoding='utf-8') as f:
-            json.dump(meta, f, indent=2, ensure_ascii=False)
+        try:
+            # Ensure directory exists
+            self.meta_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Write to temporary file first
+            temp_file = self.meta_file.with_suffix('.tmp')
+            with open(temp_file, 'w', encoding='utf-8') as f:
+                json.dump(meta, f, indent=2, ensure_ascii=False)
+            
+            # Atomically replace the original file
+            temp_file.replace(self.meta_file)
+            
+            # Debug: Verify file was written
+            if self.meta_file.exists():
+                print(f"[DEBUG] Successfully saved metadata to {self.meta_file}")
+            else:
+                print(f"[ERROR] Failed to save metadata - file does not exist after save")
+                
+        except Exception as e:
+            print(f"[ERROR] Failed to save metadata: {str(e)}")
+            raise
     
     def _calculate_file_hash(self, file_path: str) -> str:
         """Calculate SHA256 hash of a file"""
@@ -355,34 +374,49 @@ class ProjectManager:
     # File status management
     def update_file_status(self, file_path: str, audited: bool = True) -> bool:
         """Update file audit status"""
+        print(f"[DEBUG] update_file_status called with: {file_path}, audited={audited}")
+        
         meta = self._load_meta()
         
         # Convert relative path to absolute and then back to relative for storage
         abs_path = Path(file_path).absolute()
+        print(f"[DEBUG] Absolute path: {abs_path}")
+        print(f"[DEBUG] Project root: {self.project_root}")
+        
         try:
             rel_path = abs_path.relative_to(self.project_root).as_posix()
+            print(f"[DEBUG] Relative path: {rel_path}")
         except ValueError:
             # File is outside project root, use absolute path
             rel_path = str(abs_path)
+            print(f"[DEBUG] File outside project root, using absolute path: {rel_path}")
         
         if audited:
             # Calculate file hash
             file_hash = self._calculate_file_hash(str(abs_path))
             if not file_hash:
+                print(f"[ERROR] File does not exist: {abs_path}")
                 return False  # File doesn't exist
                 
+            print(f"[DEBUG] Calculated hash: {file_hash[:16]}...")
+            
             # Mark as audited with timestamp and hash
             meta["file_status"][rel_path] = {
                 "audited": True,
                 "audited_at": datetime.now().isoformat(),
                 "file_hash": file_hash
             }
+            print(f"[DEBUG] Updated file_status for {rel_path}")
         else:
             # Remove audit status
             if rel_path in meta["file_status"]:
                 del meta["file_status"][rel_path]
+                print(f"[DEBUG] Removed audit status for {rel_path}")
+            else:
+                print(f"[DEBUG] No existing status to remove for {rel_path}")
         
         self._save_meta(meta)
+        print(f"[DEBUG] Metadata saved, file_status now has {len(meta['file_status'])} entries")
         return True
     
     def get_file_status(self, file_path: str) -> Optional[Dict[str, Any]]:

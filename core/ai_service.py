@@ -83,7 +83,10 @@ raise NotImplementedError("loss function not implemented yet")
 ```python
 # ... (部分代码)
 # CRITICAL_ERROR: [命名不一致] - 变量 'lr' 在原作中为 'learning_rate'。
+# 不一致的实现:
 # self.lr = 0.01
+# 原架构中的对应代码:
+# self.learning_rate = s0.01
 raise NotImplementedError("变量 'lr' 在原作中为 'learning_rate'。")
 # RISK_INFO: [API 行为不等价] - PaddlePaddle的 F.relu 可能与PyTorch在处理某些边缘情况(如NaN)时行为不同，请确认。
 output = F.relu(input)
