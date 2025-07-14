@@ -16,13 +16,12 @@ import mcp.types as types
 
 # Import tool registry and tools
 from tools.registry import registry
-from tools.file_tools import register_file_tools
-from tools.code_tools import register_code_tools
 from tools.ai_tools import register_ai_tools
+from tools.project_tools import register_project_tools
 
 # Import prompt registry and prompts
 from prompts.registry import prompt_registry
-from prompts.code_prompts import ALL_PROMPTS
+from prompts.project_prompts import PROJECT_PROMPTS
 
 
 # Initialize server
@@ -30,9 +29,10 @@ server = Server("code-analyzer")
 
 # Register all tools
 register_ai_tools()
+register_project_tools()
 
 # Register all prompts
-for prompt in ALL_PROMPTS:
+for prompt in PROJECT_PROMPTS:
     prompt_registry.register(prompt)
 
 
@@ -89,7 +89,31 @@ async def handle_get_prompt(name: str, arguments: dict | None) -> types.GetPromp
     # Build the prompt messages based on the template
     messages = []
     
-    if prompt.name == "audit_architecture_consistency":
+    if prompt.name == "merge_recent_changes":
+        # Get existing changes argument
+        if not arguments:
+            raise ValueError("Arguments required for merge_recent_changes prompt")
+        
+        existing_changes = arguments.get("existing_changes")
+        if not existing_changes:
+            raise ValueError("existing_changes argument is required")
+        
+        # Import the prompt template
+        from prompts.project_prompts import MERGE_RECENT_CHANGES_TEMPLATE
+        
+        # Format the prompt with existing changes
+        prompt_text = MERGE_RECENT_CHANGES_TEMPLATE.format(
+            existing_changes=existing_changes
+        )
+        
+        messages.append(types.PromptMessage(
+            role="user",
+            content=types.TextContent(
+                type="text",
+                text=prompt_text
+            )
+        ))
+    elif prompt.name == "audit_architecture_consistency":
         # Get required arguments
         if not arguments:
             raise ValueError("Arguments required for audit_architecture_consistency prompt")
@@ -104,10 +128,10 @@ async def handle_get_prompt(name: str, arguments: dict | None) -> types.GetPromp
         
         try:
             # Read both files
-            from core.file_system import FileSystem
-            fs = FileSystem()
-            old_code = await fs.read_file(old_file)
-            new_code = await fs.read_file(new_file)
+            with open(old_file, 'r', encoding='utf-8') as f:
+                old_code = f.read()
+            with open(new_file, 'r', encoding='utf-8') as f:
+                new_code = f.read()
             
             # Import the prompt template
             from core.ai_service import AUDIT_ARCHITECTURE_CONSISTENCY_PROMPT

@@ -38,6 +38,8 @@ AUDIT_ARCHITECTURE_CONSISTENCY_PROMPT = """# 角色
 * **TODO实例**: 在 "新架构代码" 中，允许将变量名赋值为一个特别的TodoPlaceholder类的实例`TODO`，这代表开发者已主动跳过审计。这**不是**你需要审计的不一致。
 * **__开头的函数**: 在 "新架构代码" 中，如果遇到 `__` 开头的**函数**，这代表开发者已主动标记该部分为“私有”或“内部实现”。这个时候根据函数注释和内容来判断调用这个函数的地方的兼容处理是否合理，如果合理则跳过审计，如果不合理则标记为关键不一致。（明显不合理的有过于简化，或者没有实现）
 * **[必要的修改]**: 在 "新架构代码" 中，如果遇到 `[必要的修改]` 的注释，这代表开发者已主动标记该部分为“必要的修改”。你需要这个是否是明显不合理的简化或者跳过某个实现，如果是的话应当移除这个标记同样标记为关键不一致。
+* **已被用户豁免的条目**: 下面是用户豁免的内容，你可以认为这些内容是合理的，不需要审计。
+{user_exemptions}
 
 
 # 代码处理流程与规则
@@ -169,14 +171,15 @@ class AIService:
         
         return self._client
     
-    async def audit_architecture_consistency(self, old_code: str, new_code: str) -> str:
+    async def audit_architecture_consistency(self, old_code: str, new_code: str, user_exemptions: str = "") -> str:
         """Use AI to audit new architecture code for consistency with old architecture, marking discrepancies"""
         client = self._get_client()
         provider = self.config.provider
         
         prompt = AUDIT_ARCHITECTURE_CONSISTENCY_PROMPT.format(
             old_code=old_code,
-            new_code=new_code
+            new_code=new_code,
+            user_exemptions=user_exemptions if user_exemptions else "无用户豁免内容"
         )
         
         try:
