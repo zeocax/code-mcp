@@ -334,7 +334,7 @@ create_list_variable_tool = types.Tool(
 
 read_list_variable_tool = types.Tool(
     name="read_list_variable",
-    description="读取列表变量",
+    description="读取列表变量（需要用户确认的变量会提示）",
     inputSchema={
         "type": "object",
         "properties": {
@@ -422,6 +422,7 @@ remove_from_list_variable_tool = types.Tool(
         "required": ["name", "item"]
     }
 )
+
 
 
 def register_project_tools():

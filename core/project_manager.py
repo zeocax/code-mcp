@@ -461,7 +461,18 @@ class ProjectManager:
         meta = self._load_meta()
         if "list_variables" not in meta:
             return None
-        return meta.get("list_variables", {}).get(name)
+        
+        var_data = meta.get("list_variables", {}).get(name)
+        if not var_data:
+            return None
+            
+        # Note: In a real implementation, the MCP server would handle the confirmation
+        # by returning a special response type that triggers user confirmation
+        # For now, we just return the data with a flag
+        if var_data.get("need_user_confirmation", False):
+            var_data["__needs_user_confirmation__"] = True
+        
+        return var_data
     
     def read_all_list_variables(self) -> Dict[str, Dict[str, Any]]:
         """Read all list variables"""
@@ -521,3 +532,4 @@ class ProjectManager:
             self._save_meta(meta)
             return True
         return False
+    

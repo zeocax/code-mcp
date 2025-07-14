@@ -382,11 +382,24 @@ async def handle_read_list_variable(arguments: Dict[str, Any]) -> List[types.Tex
             # Read specific variable
             var_data = pm.read_list_variable(name)
             if var_data:
+                # Check if user confirmation is needed
+                if var_data.get("__needs_user_confirmation__"):
+                    # In a real MCP implementation, this would return a special response type
+                    # that triggers a user confirmation dialog in the client
+                    return [types.TextContent(
+                        type="text",
+                        text=f"⚠️ User confirmation required to access list variable '{name}'.\n\n" +
+                             f"This variable contains sensitive data that requires explicit user approval.\n\n" +
+                             f"Items preview:\n" +
+                             "\n".join(f"  - {item}" for item in var_data['items'][:3]) +
+                             (f"\n  ... and {len(var_data['items']) - 3} more items" if len(var_data['items']) > 3 else "")
+                    )]
+                
                 result = f"List Variable: {name}\n"
                 result += f"Items ({len(var_data['items'])}):\n"
                 for item in var_data['items']:
                     result += f"  - {item}\n"
-                result += f"Need User Confirmation: {var_data['need_user_confirmation']}\n"
+                result += f"Need User Confirmation: {var_data.get('need_user_confirmation', False)}\n"
                 result += f"Created: {var_data.get('created_at', 'Unknown')}\n"
                 result += f"Updated: {var_data.get('updated_at', 'Unknown')}"
                 return [types.TextContent(type="text", text=result)]
@@ -481,3 +494,5 @@ async def handle_remove_from_list_variable(arguments: Dict[str, Any]) -> List[ty
             return [types.TextContent(type="text", text=f"List variable or item not found: {name}")]
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error removing from list variable: {str(e)}")]
+
+
