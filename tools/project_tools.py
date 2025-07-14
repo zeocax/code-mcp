@@ -322,10 +322,6 @@ create_list_variable_tool = types.Tool(
                 "type": "array",
                 "items": {"type": "string"},
                 "description": "列表项内容"
-            },
-            "need_user_confirmation": {
-                "type": "boolean",
-                "description": "是否需要用户确认（默认false）"
             }
         },
         "required": ["name", "items"]
@@ -334,17 +330,13 @@ create_list_variable_tool = types.Tool(
 
 read_list_variable_tool = types.Tool(
     name="read_list_variable",
-    description="读取列表变量（需要用户确认的变量会提示）",
+    description="读取列表变量",
     inputSchema={
         "type": "object",
         "properties": {
             "name": {
                 "type": "string",
                 "description": "列表变量名称，如果为空则返回所有列表变量"
-            },
-            "confirmed": {
-                "type": "boolean",
-                "description": "是否已经确认访问（内部使用）"
             }
         }
     }
@@ -363,14 +355,10 @@ update_list_variable_tool = types.Tool(
             "items": {
                 "type": "array",
                 "items": {"type": "string"},
-                "description": "新的列表项内容（可选）"
-            },
-            "need_user_confirmation": {
-                "type": "boolean",
-                "description": "是否需要用户确认（可选）"
+                "description": "新的列表项内容"
             }
         },
-        "required": ["name"]
+        "required": ["name", "items"]
     }
 )
 

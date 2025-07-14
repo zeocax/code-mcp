@@ -441,15 +441,14 @@ class ProjectManager:
         return table
     
     # List variables management
-    def create_list_variable(self, name: str, items: List[str], need_user_confirmation: bool = False) -> bool:
-        """Create a named list variable with optional confirmation requirement"""
+    def create_list_variable(self, name: str, items: List[str]) -> bool:
+        """Create a named list variable"""
         meta = self._load_meta()
         if "list_variables" not in meta:
             meta["list_variables"] = {}
         
         meta["list_variables"][name] = {
             "items": items,
-            "need_user_confirmation": need_user_confirmation,
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat()
         }
@@ -469,18 +468,14 @@ class ProjectManager:
         meta = self._load_meta()
         return meta.get("list_variables", {})
     
-    def update_list_variable(self, name: str, items: Optional[List[str]] = None, 
-                           need_user_confirmation: Optional[bool] = None) -> bool:
-        """Update a list variable's items and/or confirmation requirement"""
+    def update_list_variable(self, name: str, items: List[str]) -> bool:
+        """Update a list variable's items"""
         meta = self._load_meta()
         if "list_variables" not in meta:
             return False
         
         if name in meta["list_variables"]:
-            if items is not None:
-                meta["list_variables"][name]["items"] = items
-            if need_user_confirmation is not None:
-                meta["list_variables"][name]["need_user_confirmation"] = need_user_confirmation
+            meta["list_variables"][name]["items"] = items
             meta["list_variables"][name]["updated_at"] = datetime.now().isoformat()
             self._save_meta(meta)
             return True

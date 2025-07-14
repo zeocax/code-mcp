@@ -5,7 +5,6 @@ import asyncio
 import os
 import sys
 from pathlib import Path
-from typing import Any
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
@@ -51,8 +50,8 @@ async def handle_list_tools() -> list[types.Tool]:
 
 @server.call_tool()
 async def handle_call_tool(
-    name: str, arguments: dict | None, ctx: Any = None
-) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource] | types.CreateMessageRequest:
+    name: str, arguments: dict | None
+) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
     """Handle tool calls through registry"""
     
     if not registry.has_tool(name):
@@ -63,13 +62,8 @@ async def handle_call_tool(
         return [types.TextContent(type="text", text=f"No handler found for tool: {name}")]
     
     try:
-        # Call the appropriate handler with server context
-        result = await handler(arguments or {}, server=server)
-        
-        # Check if handler returned a CreateMessageRequest for sampling
-        if isinstance(result, types.CreateMessageRequest):
-            return result
-            
+        # Call the appropriate handler
+        result = await handler(arguments or {})
         return result
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error executing tool {name}: {str(e)}")]
