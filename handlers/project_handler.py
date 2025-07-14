@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 import mcp.types as types
 from core.project_manager import ProjectManager
 
@@ -14,7 +14,7 @@ pm = ProjectManager()
 
 
 # Plans handlers
-async def handle_create_plan(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_create_plan(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle create_plan tool call"""
     content = arguments.get("content")
     title = arguments.get("title")
@@ -29,7 +29,7 @@ async def handle_create_plan(arguments: Dict[str, Any]) -> List[types.TextConten
         return [types.TextContent(type="text", text=f"Error creating plan: {str(e)}")]
 
 
-async def handle_read_plan(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_read_plan(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle read_plan tool call"""
     plan_id = arguments.get("plan_id")
     
@@ -63,7 +63,7 @@ async def handle_read_plan(arguments: Dict[str, Any]) -> List[types.TextContent]
         return [types.TextContent(type="text", text=f"Error reading plan: {str(e)}")]
 
 
-async def handle_update_plan(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_update_plan(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle update_plan tool call"""
     plan_id = arguments.get("plan_id")
     content = arguments.get("content")
@@ -82,7 +82,7 @@ async def handle_update_plan(arguments: Dict[str, Any]) -> List[types.TextConten
         return [types.TextContent(type="text", text=f"Error updating plan: {str(e)}")]
 
 
-async def handle_delete_plan(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_delete_plan(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle delete_plan tool call"""
     plan_id = arguments.get("plan_id")
     
@@ -102,7 +102,7 @@ async def handle_delete_plan(arguments: Dict[str, Any]) -> List[types.TextConten
 
 
 # Docs handlers
-async def handle_create_doc(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_create_doc(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle create_doc tool call"""
     directory = arguments.get("directory")
     content = arguments.get("content")
@@ -120,7 +120,7 @@ async def handle_create_doc(arguments: Dict[str, Any]) -> List[types.TextContent
         return [types.TextContent(type="text", text=f"Error creating documentation: {str(e)}")]
 
 
-async def handle_read_doc(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_read_doc(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle read_doc tool call"""
     directory = arguments.get("directory")
     
@@ -146,7 +146,7 @@ async def handle_read_doc(arguments: Dict[str, Any]) -> List[types.TextContent]:
         return [types.TextContent(type="text", text=f"Error reading documentation: {str(e)}")]
 
 
-async def handle_update_doc(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_update_doc(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle update_doc tool call"""
     directory = arguments.get("directory")
     content = arguments.get("content")
@@ -165,7 +165,7 @@ async def handle_update_doc(arguments: Dict[str, Any]) -> List[types.TextContent
 
 
 # TODO handlers
-async def handle_create_todo(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_create_todo(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle create_todo tool call"""
     content = arguments.get("content")
     related_plan = arguments.get("related_plan")
@@ -184,7 +184,7 @@ async def handle_create_todo(arguments: Dict[str, Any]) -> List[types.TextConten
         return [types.TextContent(type="text", text=f"Error creating todo: {str(e)}")]
 
 
-async def handle_read_todos(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_read_todos(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle read_todos tool call"""
     status = arguments.get("status", "pending")
     
@@ -209,7 +209,7 @@ async def handle_read_todos(arguments: Dict[str, Any]) -> List[types.TextContent
         return [types.TextContent(type="text", text=f"Error reading todos: {str(e)}")]
 
 
-async def handle_finish_todo(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_finish_todo(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle finish_todo tool call"""
     todo_id = arguments.get("todo_id")
     git_log = arguments.get("git_log")
@@ -227,7 +227,7 @@ async def handle_finish_todo(arguments: Dict[str, Any]) -> List[types.TextConten
         return [types.TextContent(type="text", text=f"Error finishing todo: {str(e)}")]
 
 
-async def handle_delete_todo(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_delete_todo(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle delete_todo tool call"""
     todo_id = arguments.get("todo_id")
     
@@ -244,7 +244,7 @@ async def handle_delete_todo(arguments: Dict[str, Any]) -> List[types.TextConten
         return [types.TextContent(type="text", text=f"Error deleting todo: {str(e)}")]
 
 
-async def handle_move_todo(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_move_todo(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle move_todo tool call"""
     todo_id = arguments.get("todo_id")
     position = arguments.get("position")
@@ -266,7 +266,7 @@ async def handle_move_todo(arguments: Dict[str, Any]) -> List[types.TextContent]
 
 
 # Recent changes handlers
-async def handle_update_recent_changes(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_update_recent_changes(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle update_recent_changes tool call"""
     current = arguments.get("current", [])
     archived = arguments.get("archived", [])
@@ -281,7 +281,7 @@ async def handle_update_recent_changes(arguments: Dict[str, Any]) -> List[types.
         return [types.TextContent(type="text", text=f"Error updating recent changes: {str(e)}")]
 
 
-async def handle_get_recent_changes(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_get_recent_changes(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle get_recent_changes tool call"""
     try:
         changes = pm.get_recent_changes()
@@ -299,29 +299,26 @@ async def handle_get_recent_changes(arguments: Dict[str, Any]) -> List[types.Tex
 
 
 # File status handlers
-async def handle_update_file_status(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_update_file_status(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle update_file_status tool call"""
     file_path = arguments.get("file_path")
-    status = arguments.get("status")
+    audited = arguments.get("audited")
     
-    if not file_path or not status:
-        return [types.TextContent(type="text", text="Error: file_path and status are required")]
+    if not file_path or audited is None:
+        return [types.TextContent(type="text", text="Error: file_path and audited are required")]
     
     try:
-        # Convert status string to enum
-        status_enum = FileStatus(status)
-        success = pm.update_file_status(file_path, status_enum)
+        success = pm.update_file_status(file_path, audited)
         if success:
-            return [types.TextContent(type="text", text=f"Successfully updated {file_path} status to {status}")]
+            status_text = "audited" if audited else "not audited"
+            return [types.TextContent(type="text", text=f"Successfully updated {file_path} status to {status_text}")]
         else:
             return [types.TextContent(type="text", text=f"Failed to update status for {file_path}")]
-    except ValueError:
-        return [types.TextContent(type="text", text=f"Invalid status: {status}. Valid values: plan, impl, reviewed, tested")]
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error updating file status: {str(e)}")]
 
 
-async def handle_get_file_status(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_get_file_status(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle get_file_status tool call"""
     file_path = arguments.get("file_path")
     
@@ -332,9 +329,9 @@ async def handle_get_file_status(arguments: Dict[str, Any]) -> List[types.TextCo
         status_info = pm.get_file_status(file_path)
         if status_info:
             result = f"File Status for {file_path}:\n"
-            result += f"- Status: {status_info.status}\n"
-            result += f"- Hash: {status_info.hash[:16]}...\n"
-            result += f"- Last Modified: {status_info.last_modified}"
+            result += f"- Audited: {'Yes' if status_info.get('audited') else 'No'}\n"
+            if 'audited_at' in status_info:
+                result += f"- Audited At: {status_info['audited_at']}"
             return [types.TextContent(type="text", text=result)]
         else:
             return [types.TextContent(type="text", text=f"No status information found for {file_path}")]
@@ -342,7 +339,7 @@ async def handle_get_file_status(arguments: Dict[str, Any]) -> List[types.TextCo
         return [types.TextContent(type="text", text=f"Error getting file status: {str(e)}")]
 
 
-async def handle_list_file_status(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_list_file_status(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle list_file_status tool call"""
     directory = arguments.get("directory")
     
@@ -354,7 +351,7 @@ async def handle_list_file_status(arguments: Dict[str, Any]) -> List[types.TextC
 
 
 # List variables handlers
-async def handle_create_list_variable(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_create_list_variable(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle create_list_variable tool call"""
     name = arguments.get("name")
     items = arguments.get("items", [])
@@ -373,7 +370,7 @@ async def handle_create_list_variable(arguments: Dict[str, Any]) -> List[types.T
         return [types.TextContent(type="text", text=f"Error creating list variable: {str(e)}")]
 
 
-async def handle_read_list_variable(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_read_list_variable(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle read_list_variable tool call"""
     name = arguments.get("name")
     
@@ -382,19 +379,6 @@ async def handle_read_list_variable(arguments: Dict[str, Any]) -> List[types.Tex
             # Read specific variable
             var_data = pm.read_list_variable(name)
             if var_data:
-                # Check if user confirmation is needed
-                if var_data.get("__needs_user_confirmation__"):
-                    # In a real MCP implementation, this would return a special response type
-                    # that triggers a user confirmation dialog in the client
-                    return [types.TextContent(
-                        type="text",
-                        text=f"⚠️ User confirmation required to access list variable '{name}'.\n\n" +
-                             f"This variable contains sensitive data that requires explicit user approval.\n\n" +
-                             f"Items preview:\n" +
-                             "\n".join(f"  - {item}" for item in var_data['items'][:3]) +
-                             (f"\n  ... and {len(var_data['items']) - 3} more items" if len(var_data['items']) > 3 else "")
-                    )]
-                
                 result = f"List Variable: {name}\n"
                 result += f"Items ({len(var_data['items'])}):\n"
                 for item in var_data['items']:
@@ -421,7 +405,7 @@ async def handle_read_list_variable(arguments: Dict[str, Any]) -> List[types.Tex
         return [types.TextContent(type="text", text=f"Error reading list variable: {str(e)}")]
 
 
-async def handle_update_list_variable(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_update_list_variable(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle update_list_variable tool call"""
     name = arguments.get("name")
     items = arguments.get("items")
@@ -443,7 +427,7 @@ async def handle_update_list_variable(arguments: Dict[str, Any]) -> List[types.T
         return [types.TextContent(type="text", text=f"Error updating list variable: {str(e)}")]
 
 
-async def handle_delete_list_variable(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_delete_list_variable(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle delete_list_variable tool call"""
     name = arguments.get("name")
     
@@ -460,7 +444,7 @@ async def handle_delete_list_variable(arguments: Dict[str, Any]) -> List[types.T
         return [types.TextContent(type="text", text=f"Error deleting list variable: {str(e)}")]
 
 
-async def handle_append_to_list_variable(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_append_to_list_variable(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle append_to_list_variable tool call"""
     name = arguments.get("name")
     item = arguments.get("item")
@@ -469,16 +453,52 @@ async def handle_append_to_list_variable(arguments: Dict[str, Any]) -> List[type
         return [types.TextContent(type="text", text="Error: name and item are required")]
     
     try:
+        # Check if this variable requires confirmation
+        var_data = pm.read_list_variable(name)
+        if not var_data:
+            return [types.TextContent(type="text", text=f"List variable not found: {name}")]
+        
+        # If confirmation is required and server context is available, ask user
+        if var_data.get("need_user_confirmation", False) and server:
+            # Use server's session to create a message and get user confirmation
+            try:
+                confirmation_response = await server.request_context.session.create_message(
+                    messages=[
+                        types.SamplingMessage(
+                            role="user", 
+                            content=types.TextContent(
+                                type="text", 
+                                text=f"🔒 添加确认\n\n"
+                                     f"您正在向需要确认的列表变量 '{name}' 添加以下项:\n\n"
+                                     f"要添加的内容: {item}\n\n"
+                                     f"这是一个敏感操作。是否确认添加？\n"
+                                     f"请回复 '是' 或 'yes' 确认，'否' 或 'no' 取消。"
+                            )
+                        )
+                    ],
+                    max_tokens=10,
+                    temperature=0.0
+                )
+                
+                # Check user response
+                response_text = confirmation_response.content.text.lower().strip()
+                if response_text not in ['是', 'yes', 'y', '确认']:
+                    return [types.TextContent(type="text", text=f"❌ 操作已取消\n\n用户拒绝向列表变量 '{name}' 添加项。")]
+                    
+            except Exception as e:
+                return [types.TextContent(type="text", text=f"Error getting user confirmation: {str(e)}")]
+        
+        # Proceed with adding the item
         success = pm.append_to_list_variable(name, item)
         if success:
-            return [types.TextContent(type="text", text=f"Successfully appended to list variable: {name}")]
+            return [types.TextContent(type="text", text=f"✅ 成功添加到列表变量: {name}")]
         else:
             return [types.TextContent(type="text", text=f"List variable not found: {name}")]
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error appending to list variable: {str(e)}")]
 
 
-async def handle_remove_from_list_variable(arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_remove_from_list_variable(arguments: Dict[str, Any], server=None) -> List[types.TextContent]:
     """Handle remove_from_list_variable tool call"""
     name = arguments.get("name")
     item = arguments.get("item")
@@ -494,5 +514,6 @@ async def handle_remove_from_list_variable(arguments: Dict[str, Any]) -> List[ty
             return [types.TextContent(type="text", text=f"List variable or item not found: {name}")]
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error removing from list variable: {str(e)}")]
+
 
 

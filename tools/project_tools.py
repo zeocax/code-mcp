@@ -341,6 +341,10 @@ read_list_variable_tool = types.Tool(
             "name": {
                 "type": "string",
                 "description": "列表变量名称，如果为空则返回所有列表变量"
+            },
+            "confirmed": {
+                "type": "boolean",
+                "description": "是否已经确认访问（内部使用）"
             }
         }
     }
