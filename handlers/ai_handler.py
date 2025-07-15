@@ -17,6 +17,7 @@ async def handle_audit_architecture_consistency(arguments: Dict[str, Any]) -> Li
     """Handle audit_architecture_consistency tool call"""
     old_file = arguments.get("old_file")
     new_file = arguments.get("new_file")
+    exemption_file = arguments.get("exemption_file")
     
     if not old_file or not new_file:
         return [types.TextContent(type="text", text="Error: old_file and new_file are required")]
@@ -28,8 +29,15 @@ async def handle_audit_architecture_consistency(arguments: Dict[str, Any]) -> Li
         with open(new_file, 'r', encoding='utf-8') as f:
             new_code = f.read()
         
-        # Use AI to audit consistency
-        audited_code = await ai_service.audit_architecture_consistency(old_code, new_code)
+        # If exemption_file not provided, check for default location
+        if not exemption_file:
+            from pathlib import Path
+            default_exemption_path = Path(pm.project_root) / "AUDIT_EXEMPTIONS.md"
+            if default_exemption_path.exists():
+                exemption_file = str(default_exemption_path)
+        
+        # Use AI to audit consistency with exemption file
+        audited_code = await ai_service.audit_architecture_consistency(old_code, new_code, exemption_file)
         
         # Write the audited code back to new_file
         with open(new_file, 'w', encoding='utf-8') as f:

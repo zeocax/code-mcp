@@ -173,6 +173,17 @@ await client.call_tool("analyze_structure", {"path": "src/main.py"})
 - 防止路径遍历攻击
 - 限制资源使用
 
+## 审计豁免规则支持
+
+### 概述
+审计架构一致性功能支持通过外部文件定义豁免规则。用户可以创建和维护 `AUDIT_EXEMPTIONS.md` 文件来自定义审计过程中的豁免条件。
+
+### 使用方法
+1. 在项目根目录创建 `AUDIT_EXEMPTIONS.md` 文件
+2. 按照文件模板格式定义豁免规则
+3. 调用 `audit_architecture_consistency` 工具时会自动读取该文件
+4. 也可以通过 `exemption_file` 参数指定其他豁免规则文件
+
 ## 待实现功能：MCP Prompts支持
 
 ### 背景

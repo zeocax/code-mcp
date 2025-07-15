@@ -22,6 +22,10 @@ audit_architecture_consistency_tool = types.Tool(
             "new_file": {
                 "type": "string", 
                 "description": "新架构文件路径（将被审计并标记不一致之处），绝对路径"
+            },
+            "exemption_file": {
+                "type": "string",
+                "description": "审计豁免规则文件路径（可选），绝对路径"
             }
         },
         "required": ["old_file", "new_file"]

@@ -39,6 +39,10 @@ AUDIT_ARCHITECTURE_CONSISTENCY_PROMPT = """# 角色
 * **__开头的函数**: 在 "新架构代码" 中，如果遇到 `__` 开头的**函数**，这代表开发者已主动标记该部分为"私有"或"内部实现"。这个时候根据函数注释和内容来判断调用这个函数的地方的兼容处理是否合理，如果合理则跳过审计，如果不合理则标记为关键不一致。（明显不合理的有过于简化，或者没有实现）
 * **[必要的修改]**: 在 "新架构代码" 中，如果遇到 `[必要的修改]` 的注释，这代表开发者已主动标记该部分为"必要的修改"。你需要这个是否是明显不合理的简化或者跳过某个实现，如果是的话应当移除这个标记同样标记为关键不一致。
 * **原架构代码中错误的实现**: 如果某些逻辑在原架构代码中是错误的，此时新架构代码中也有对应的实现，此时不应当标记为不一致。
+* **用户提供的豁免规则**: 除去上述情况，用户可以提供豁免规则，这些规则将作为C类豁免情况的一部分。
+
+用户提供的豁免规则：
+{exemption_rules}
 
 
 # 代码处理流程与规则
@@ -173,14 +177,38 @@ class AIService:
         
         return self._client
     
-    async def audit_architecture_consistency(self, old_code: str, new_code: str) -> str:
+    async def audit_architecture_consistency(self, old_code: str, new_code: str, exemption_file: str = None) -> str:
         """Use AI to audit new architecture code for consistency with old architecture, marking discrepancies"""
         client = self._get_client()
         provider = self.config.provider
         
+        # Read exemption rules if file is provided
+        exemption_rules = ""
+        if exemption_file:
+            try:
+                from pathlib import Path
+                exemption_path = Path(exemption_file)
+                if exemption_path.exists():
+                    with open(exemption_path, 'r', encoding='utf-8') as f:
+                        exemption_content = f.read()
+                    # Extract user custom rules from the markdown
+                    import re
+                    # Look for content after "用户自定义规则："
+                    custom_rules_match = re.search(r'### 用户自定义规则：\s*\n(.*?)(?=\n##|$)', exemption_content, re.DOTALL)
+                    if custom_rules_match:
+                        exemption_rules = custom_rules_match.group(1).strip()
+            except Exception as e:
+                print(f"Warning: Failed to read exemption file: {e}")
+        
+        # If no custom rules, use empty string
+        if not exemption_rules:
+            exemption_rules = "无用户自定义豁免规则"
+        
+        # Format prompt with all parameters
         prompt = AUDIT_ARCHITECTURE_CONSISTENCY_PROMPT.format(
             old_code=old_code,
-            new_code=new_code
+            new_code=new_code,
+            exemption_rules=exemption_rules
         )
         
         try:

@@ -457,9 +457,9 @@ def register_project_tools():
     registry.register(list_file_status_tool, handle_list_file_status)
     
     # Register list variable tools
-    registry.register(create_list_variable_tool, handle_create_list_variable)
-    registry.register(read_list_variable_tool, handle_read_list_variable)
+    # registry.register(create_list_variable_tool, handle_create_list_variable)
+    # registry.register(read_list_variable_tool, handle_read_list_variable)
     # registry.register(update_list_variable_tool, handle_update_list_variable)
     # registry.register(delete_list_variable_tool, handle_delete_list_variable)
-    registry.register(append_to_list_variable_tool, handle_append_to_list_variable)
+    # registry.register(append_to_list_variable_tool, handle_append_to_list_variable)
     # registry.register(remove_from_list_variable_tool, handle_remove_from_list_variable)
