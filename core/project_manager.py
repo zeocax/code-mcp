@@ -494,10 +494,21 @@ class ProjectManager:
         
         for file_path in all_files:
             status_info = file_statuses.get(file_path)
+            abs_path = self.project_root / file_path
+            
+            # Check if file has AUDIT_SKIP marker in first line
+            has_skip_marker = False
+            if abs_path.exists() and abs_path.suffix == '.py':
+                try:
+                    with open(abs_path, 'r', encoding='utf-8') as f:
+                        first_line = f.readline().strip()
+                        if first_line.startswith('#') and 'AUDIT_SKIP' in first_line:
+                            has_skip_marker = True
+                except:
+                    pass
             
             if status_info:
                 # Check if file still exists and hash matches
-                abs_path = self.project_root / file_path
                 current_hash = self._calculate_file_hash(str(abs_path))
                 
                 if not current_hash:
@@ -511,8 +522,15 @@ class ProjectManager:
                         status = "🔄 Modified"
                     else:
                         status = "✓ Audited"
+                    
+                    # Add skip marker info if present
+                    if has_skip_marker:
+                        status = "✓ 人工通过"
             else:
                 status = "✗ Not Audited"
+                # Add skip marker info if present
+                if has_skip_marker:
+                    status = "✓ 人工通过"
                 
             table += f"| {file_path} | {status} |\n"
         

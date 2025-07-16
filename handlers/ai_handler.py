@@ -29,6 +29,32 @@ async def handle_audit_architecture_consistency(arguments: Dict[str, Any]) -> Li
         with open(new_file, 'r', encoding='utf-8') as f:
             new_code = f.read()
         
+        # Check if the first line of new file has special marker to skip audit
+        lines = new_code.split('\n')
+        if lines and lines[0].strip().startswith('#') and 'AUDIT_SKIP' in lines[0]:
+            # Skip audit and update status directly
+            status_updated = False
+            status_error = None
+            try:
+                print(f"[DEBUG] Skipping audit due to AUDIT_SKIP marker, updating file status for: {new_file}")
+                status_updated = pm.update_file_status(new_file, audited=True)
+                print(f"[DEBUG] update_file_status returned: {status_updated}")
+            except Exception as e:
+                status_error = str(e)
+                print(f"[ERROR] Exception in update_file_status: {status_error}")
+                import traceback
+                traceback.print_exc()
+            
+            result_msg = "跳过审计：文件包含 AUDIT_SKIP 标记"
+            if status_updated:
+                result_msg += "\n✓ 文件审计状态已更新"
+            elif status_error:
+                result_msg += f"\n⚠️ 文件状态更新失败: {status_error}"
+            else:
+                result_msg += "\n⚠️ 文件状态更新失败"
+            
+            return [types.TextContent(type="text", text=result_msg)]
+        
         # Use AI to audit consistency with exemption file
         audited_code = await ai_service.audit_architecture_consistency(old_code, new_code, exemption_file)
         
