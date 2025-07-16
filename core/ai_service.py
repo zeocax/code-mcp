@@ -34,7 +34,7 @@ AUDIT_ARCHITECTURE_CONSISTENCY_PROMPT = """# 角色
 * **数值精度问题**: 可能引入非预期精度变化的dtype或运算。
 
 ### C类：豁免情况（不应当标记为CRITICAL_ERROR）
-* **开发者预留的未实现部分**: 如果在 "新架构代码" 中遇到已有的 raise NotImplementedError，这代表开发者已主动标记该部分为"暂时放弃"或"待实现"。这**不是**你需要审计的不一致。
+* **开发者预留的未实现部分**: 如果在 "新架构代码" 中遇到已有的 raise NotImplementedError("xxx")，这代表开发者已主动标记该部分为"暂时放弃"或"待实现"。这**不是**你需要审计的不一致。
 * **TODO实例**: 在 "新架构代码" 中，允许将变量名赋值为一个特别的TodoPlaceholder类的实例`TODO`，这代表开发者已主动跳过审计。这**不是**你需要审计的不一致。
 * **__开头的函数**: 在 "新架构代码" 中，如果遇到 `__` 开头的**函数**，这代表开发者已主动标记该部分为"私有"或"内部实现"。这个时候根据函数注释和内容来判断调用这个函数的地方的兼容处理是否合理，如果合理则跳过审计，如果不合理则标记为关键不一致。（明显不合理的有过于简化，或者没有实现）
 * **[必要的修改]**: 在 "新架构代码" 中，如果遇到 `[必要的修改]` 的注释，这代表开发者已主动标记该部分为"必要的修改"。你需要这个是否是明显不合理的简化或者跳过某个实现，如果是的话应当移除这个标记同样标记为关键不一致。
@@ -54,7 +54,7 @@ AUDIT_ARCHITECTURE_CONSISTENCY_PROMPT = """# 角色
 3.  根据判断结果，从以下三种操作中选择一种来处理当前代码块：
 
     * **操作 A：标记关键不一致 (中断执行)**
-        * **何时使用**：当代码满足“A类：关键逻辑不一致”中的任意一条时。
+        * **何时使用**：当代码满足“A类：关键逻辑不一致”中的内容，且不满足“C类：豁免情况”中的任意一条时。
         * **具体步骤**：
             1.  在有问题的代码行上方，添加一行注释，格式为：# CRITICAL_ERROR: [不一致类别] - 不一致的原因描述。
             2.  将原始的有问题的代码行注释，标注为： # 不一致的实现。
@@ -68,7 +68,7 @@ AUDIT_ARCHITECTURE_CONSISTENCY_PROMPT = """# 角色
             2.  **保留**原始代码行，不做修改。
 
     * **操作 C：忽略或放行**
-        * **何时使用**：当代码完全正确，或满足“C类：豁免情况”时。
+        * **何时使用**：当代码完全符合原架构代码，或满足“C类：豁免情况”时。
         * **具体步骤**：不进行任何修改，保留代码原样。
 
 ### **处理示例**
@@ -79,7 +79,6 @@ AUDIT_ARCHITECTURE_CONSISTENCY_PROMPT = """# 角色
 # ... (部分代码)
 self.lr = 0.01
 output = F.relu(input)
-# ... (开发者已标记的未实现部分)
 raise NotImplementedError("loss function not implemented yet")
 ```
 
@@ -93,9 +92,6 @@ raise NotImplementedError("loss function not implemented yet")
 # 原架构中的对应代码:
 # self.learning_rate = s0.01
 raise NotImplementedError("变量 'lr' 在原作中为 'learning_rate'。")
-# RISK_INFO: [API 行为不等价] - PaddlePaddle的 F.relu 可能与PyTorch在处理某些边缘情况(如NaN)时行为不同，请确认。
-output = F.relu(input)
-# ... (开发者已标记的未实现部分)
 raise NotImplementedError("loss function not implemented yet")
 ```
 
