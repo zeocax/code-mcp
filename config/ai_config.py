@@ -43,12 +43,14 @@ class AIConfig:
                 with open(env_path, 'r') as f:
                     for line in f:
                         line = line.strip()
+                        # print(f"line: {line}")
                         if line and not line.startswith('#') and '=' in line:
                             key, value = line.split('=', 1)
                             key = key.strip()
                             value = value.strip().strip('"').strip("'")
-                            if key not in os.environ:  # Don't override existing env vars
-                                os.environ[key] = value
+                            # if key not in os.environ:  # Don't override existing env vars
+                            os.environ[key] = value
+                            # print(f"Loaded {key}: {value}")
             except Exception:
                 pass  # Silently ignore .env file errors
     
