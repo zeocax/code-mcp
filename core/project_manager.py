@@ -472,7 +472,7 @@ class ProjectManager:
             # Find all Python files in directory
             all_files = []
             for file_path in search_path.rglob("*.py"):
-                if file_path.is_file():
+                if file_path.is_file() and file_path.name != "__init__.py":
                     try:
                         rel_path = file_path.relative_to(self.project_root).as_posix()
                         all_files.append(rel_path)
@@ -480,7 +480,7 @@ class ProjectManager:
                         pass
         else:
             # List all tracked Python files
-            all_files = [f for f in file_statuses.keys() if f.endswith('.py')]
+            all_files = [f for f in file_statuses.keys() if f.endswith('.py') and not f.endswith('__init__.py')]
         
         if not all_files:
             return "No Python files found"
